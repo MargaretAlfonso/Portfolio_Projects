@@ -1,8 +1,8 @@
 /*
 Cost of Living - USA : Data Exploration 
+I used a dataset found on Kaggle called "US cost of Living Dataset (1877 Counties)."
 
 Skills used: Joins, CTE's, Aggregate Functions, Converting Data Types, Case Statements, Windows Functions, Temp Tables, Creating Views,
-
 */
 
 
