@@ -2,10 +2,8 @@
 
 --Data Checked: Duplicates, Missing Values, Formatting, Data Type errors, Consistent Values, Organization
 --Skills used: Partition By, CTE, Self-Join, Substring, Case Statement, Replace, Parsename
-
-
  
- ------------------------------------------------------------------
+ -------------------------------------------------------------------------------------------------------------------
  --Checking out the raw data, looking for errors
 
 Select *
@@ -43,7 +41,7 @@ From CTE_RowNum
 Where ROW_NUM > 1 
 Order by UniqueID
 
---There are 104 rows with duplicated values, but unique UniqueIDs, these should be deleted
+--There are 103 rows with duplicated values, but unique UniqueIDs, these should be deleted
 
 WITH CTE_RowNum AS
 (
@@ -125,7 +123,7 @@ SET Property_City = SUBSTRING(PropertyAddress,CHARINDEX(',', PropertyAddress) +1
 Select *
 From PortfolioProject.dbo.NashvilleHousing
 
---2 new columns created: Address and City 
+--2 new columns created: Property_Address and Property_City 
 
 --Standardize SaleDate from DATETIME to DATE data type
 
@@ -163,7 +161,7 @@ Select *
 From PortfolioProject.dbo.NashvilleHousing
 Where OwnerName IS NULL
 
---There are 31,216 rows with missing values for OwnerName.
+--There are 31,158 rows with missing values for OwnerName.
 --It looks like for the rows with missing values for OwnerName also have missing Values for:
 --OwnerAddress, Acreage, TaxDistrict,LandValue, BuildingValue, TotalValue, YearBuilt, Bedrooms, FullBath, and HalfBath
 --Important to note
@@ -172,7 +170,7 @@ Select *
 From PortfolioProject.dbo.NashvilleHousing
 Where OwnerName IS NOT NULL and Bedrooms IS NULL
 
---There are 1409 rows that also have Nulls in Bedrooms (in addition to the 31,216 rows of data with Nulls in OwnerName)
+--There are 1408 rows that also have Nulls in Bedrooms (in addition to the 31,158 rows of data with Nulls in OwnerName)
 --To be addressed and kept in mind for later.
 
 --Checking Values - SoldAsVacant Column, there are 4 possible values: (No, Yes, N, Y), there should only be 2 values
@@ -241,3 +239,12 @@ From PortfolioProject.dbo.NashvilleHousing
 Alter Table PortfolioProject.dbo.NashvilleHousing
 Drop Column PropertyAddress, OwnerAddress
 
+--Checking results
+
+Select *
+From PortfolioProject.dbo.NashvilleHousing
+
+--Data Cleaning Complete
+--Important Notes: Nulls in LegalReference, OwnerName, OwnerAddress, Acreage, TaxDistrict,LandValue, BuildingValue, TotalValue, YearBuilt, Bedrooms, FullBath, and HalfBath
+--Missing values could not be populated from existing data
+--Request for more data to join to existing table to fill in missing values
