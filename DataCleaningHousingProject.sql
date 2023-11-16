@@ -2,12 +2,15 @@
 
 --Data Checked: Duplicates, Missing Values, Formatting, Data Type errors, Consistent Values, Organization
 --Skills used: Partition By, CTE, Self-Join, Substring, Case Statement, Replace, Parsename
+
+
  
- -------------------------------------------------------------------------------------------------------------------
+ ------------------------------------------------------------------
  --Checking out the raw data, looking for errors
 
 Select *
 From PortfolioProject.dbo.NashvilleHousing
+
 
 --Returns 56477 Rows
 --Checking for Duplicate Values 
@@ -24,14 +27,15 @@ From PortfolioProject.dbo.NashvilleHousing
 Order by ParcelID
 
 --Only 48559 Rows, a difference of 7918 rows
---Duplicate ParcelIDs may mean there are duplicate rows with only different UniqueIDs, or that the same property was sold more than 1 time.
+--Duplicate ParcelIDs may mean there are duplicate rows with only different UniqueIDs, or that the same property was sold moUponre than 1 time.
+--Upon inspection of the data the same sale is duplicated several times with different UniqueIDs and ParcelIDs, this skews the data.
 --Partition by columns with values that should not be duplicated, such as the same address, sold on the same date, for the same price
 
 WITH CTE_RowNum AS
 (
 Select *,
 	ROW_NUMBER() Over (
-	Partition BY ParcelID, PropertyAddress, SalePrice, SaleDate, LegalReference
+	Partition BY PropertyAddress, SalePrice, SaleDate, LegalReference
 	Order by UniqueID
 	) row_num
 From PortfolioProject.dbo.NashvilleHousing
@@ -41,13 +45,13 @@ From CTE_RowNum
 Where ROW_NUM > 1 
 Order by UniqueID
 
---There are 103 rows with duplicated values, but unique UniqueIDs, these should be deleted
+--There are 991 rows with duplicated sales values, these should be deleted
 
 WITH CTE_RowNum AS
 (
 Select *,
 	ROW_NUMBER() Over (
-	Partition BY ParcelID, PropertyAddress, SalePrice, SaleDate, LegalReference
+	Partition BY PropertyAddress, SalePrice, SaleDate, LegalReference
 	Order by UniqueID
 	) row_num
 From PortfolioProject.dbo.NashvilleHousing
@@ -55,7 +59,6 @@ From PortfolioProject.dbo.NashvilleHousing
 DELETE 
 From CTE_RowNum
 Where ROW_NUM > 1 
-
 
 --Checking for Null Values 
 
@@ -120,10 +123,7 @@ SET Property_City = SUBSTRING(PropertyAddress,CHARINDEX(',', PropertyAddress) +1
 
 --Check results
 
-Select *
-From PortfolioProject.dbo.NashvilleHousing
-
---2 new columns created: Property_Address and Property_City 
+--2 new columns created: Address and City 
 
 --Standardize SaleDate from DATETIME to DATE data type
 
@@ -161,7 +161,7 @@ Select *
 From PortfolioProject.dbo.NashvilleHousing
 Where OwnerName IS NULL
 
---There are 31,158 rows with missing values for OwnerName.
+--There are 30,355 rows with missing values for OwnerName.
 --It looks like for the rows with missing values for OwnerName also have missing Values for:
 --OwnerAddress, Acreage, TaxDistrict,LandValue, BuildingValue, TotalValue, YearBuilt, Bedrooms, FullBath, and HalfBath
 --Important to note
@@ -170,7 +170,7 @@ Select *
 From PortfolioProject.dbo.NashvilleHousing
 Where OwnerName IS NOT NULL and Bedrooms IS NULL
 
---There are 1408 rows that also have Nulls in Bedrooms (in addition to the 31,158 rows of data with Nulls in OwnerName)
+--There are 1351 rows that also have Nulls in Bedrooms (in addition to the 30,355 rows of data with Nulls in OwnerName)
 --To be addressed and kept in mind for later.
 
 --Checking Values - SoldAsVacant Column, there are 4 possible values: (No, Yes, N, Y), there should only be 2 values
@@ -239,12 +239,15 @@ From PortfolioProject.dbo.NashvilleHousing
 Alter Table PortfolioProject.dbo.NashvilleHousing
 Drop Column PropertyAddress, OwnerAddress
 
+--OwnerName column contains commas, this will affect the creation of a CSV file.
+--Changing commas to periods
+
+Update PortfolioProject.dbo.NashvilleHousing
+SET OwnerName = REPLACE(OwnerName,',', '.')
+
 --Checking results
 
 Select *
 From PortfolioProject.dbo.NashvilleHousing
 
---Data Cleaning Complete
---Important Notes: Nulls in LegalReference, OwnerName, OwnerAddress, Acreage, TaxDistrict,LandValue, BuildingValue, TotalValue, YearBuilt, Bedrooms, FullBath, and HalfBath
---Missing values could not be populated from existing data
---Request for more data to join to existing table to fill in missing values
+--Data cleaned and ready to be exported into a CSV file
